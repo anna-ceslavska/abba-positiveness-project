@@ -1,0 +1,239 @@
+---
+title: "Does positiveness impact popularity of ABBA's songs?"
+author: "Anna Ceslavska"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(spotifyr)
+library(here)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+
+access_token <- get_spotify_access_token()
+file <- here("abba_spotify.csv")
+abba <- read_csv(file, show_col_types = FALSE)
+```
+
+
+
+### Science in music
+
+
+  There are many “feel-good” songs that can easily improve mood and enthuse even the most morose listener. No secret to anyone, music and happiness are intimately linked, leading to a better productivity and greater inspiration. For this reason, scientists have been interested in a question of what makes for the most mood-boosting tunes. Neuroscientists developed a mathematical formula of a happy track. In 2015 a Dutch cognitive neuroscientist Dr. Jacob Jolij was asked to conduct research exploring customers' music preference by the British electronics brand Alba.[^1] Dr. Jolij decided on a formula that combines lyrics, tempo, and key to calculate a song's feel-good factor. 
+
+[^1]:  Abreu, M. (2015, September 25). Neuroscientist calculates feel-good top 10 playlist - The Boston Globe. BostonGlobe.com. Retrieved May 1, 2023, from https://www.bostonglobe.com/arts/2015/09/25/neuroscientist-calculates-feel-good-top-playlist/5SjZ0X8WvrztSiQDp1DGfP/story.html 
+
+This year, in 2023, music psychologist Dr. Michael Bonshor from the University of Sheffield also developed his formula. According to him, happiest-sounding songs are in a major key, have great danceability, high volume, a repetitive rhythm, and a tempo of, approximately, 137 beats per minute (bpm). [^2]
+
+[^2]:  Varvaris, M. (2023, February 16). Scientists reveal the happiest song of All time. theMusic.com.au | Australian music news, gig guide, music reviews. Retrieved May 1, 2023, from https://themusic.com.au/news/scientists-reveal-the-happiest-song-of-all-time/hkqSmJuanZw/17-02-23 
+
+Both researchers also released their lists of all-time happiest songs. Jolij called “Don’t Stop Me Now” by Queen the song number one, followed by ABBA’s “Dancing Queen”. In turn, Dr Bonshor placed “Good Vibrations” by The Beach Boys at the leading position. Meanwhile, another ABBA’s song -  “Waterloo” was also included in the list. This way, the “happiness” and liveliness of ABBA songs intrigued me. 
+
+
+In this project, I would like to look more into what makes some of ABBA’s songs so positive. Then, I will discover whether there is a relation between “happiness” and popularity of tracks. In other words, I will research whether the happier tracks tend to be more appraised by the audience. 
+
+
+### Background of ABBA
+
+
+ABBA is a Swedish pop group that was active between 1972 and 1982. The group consisted of two married couples and is considered one of the best-selling music artists of all time, with estimated record sales of over 150 million copies worldwide. The catchy, upbeat pop songs by ABBA, which featured rich harmonies and elaborate arrangements, are to blame for their success. However, some of ABBA’s other well known tracks such as “The Winner Takes it All” are more lyrical and less upbeat. 
+
+
+This is the list of the most popular ABBA songs played each week on Spotify:
+
+
+```{r}
+top_tracks <- get_artist_top_tracks("0LcJLqbBmaGUft1e9Mm8HV") %>%
+  select(name, popularity, album.name)
+
+knitr::kable(top_tracks)
+```
+
+I will take into account only studio tracks as the live performances are more likely to have discrepant values due to quality of recording. Moreover, I won't consider repeated songs translated to different languages. 
+
+
+```{r}
+abba_tidy <- abba %>%
+  filter(!grepl("live", track_name, ignore.case = TRUE),
+         (!grepl("Version", track_name, ignore.case = TRUE))) 
+  
+```
+
+
+One of the most important metrics as a measure of positiveness is song's valence. It's definition is "A measure from 0.0 to 1.0 describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry)."[^3]
+
+[^3]: RStudio. (n.d.). Sign in. Spotify Music Moods. Retrieved May 1, 2023, from https://rpubs.com/mary18/860196#:~:text=Valence%3A%20A%20measure%20from%200.0,sad%2C%20depressed%2C%20angry) .
+
+Another metric important to my question is danceability. My hypothesis is that the higher is valence, the higher is danceability.
+
+I would like to see whether there is a relation between the two variables. 
+
+```{r, fig.alt = "A plot showing the relationship between the valence and danceability"}
+ggplot(abba_tidy, aes(x = valence,
+                      y = danceability)) +
+  geom_point() +
+  labs(x = "Valence", 
+       y = "Danceability",
+       title = "Relationship of Valence and Danceability") +
+  geom_smooth(method = "lm",
+              se = FALSE) +
+  theme_minimal()
+```
+
+```{r}
+cor(abba_tidy$danceability,
+    abba_tidy$valence)
+```
+
+```{r}
+reg_model <- lm(danceability ~ valence, data = abba_tidy)
+
+summary(reg_model)
+```
+
+From the above graph it can be seen that there is a moderately positive relationship between danceability and valence. Moreover, based on the regression analysis, there is a positive relationship between valence and danceability in the ABBA songs (p-value < 0.001 indicates that the relationship is statistically significant). Therefore, generally, the songs that tend to be more positive (higher valence) have a higher danceability. 
+
+
+```{r, fig.alt = "A plot showing the relationship between the valence and energy"}
+ggplot(abba_tidy, aes(x = valence,
+                      y = energy)) +
+  geom_point() +
+  labs(x = "Valence", 
+       y = "Energy",
+       title = "Relationship of Valence and Energy") +
+  geom_smooth(method = "lm",
+              se = FALSE) +
+  theme_minimal()
+```
+
+```{r}
+cor(abba_tidy$energy,
+    abba_tidy$valence)
+```
+
+```{r}
+reg_model2 <- lm(energy ~ valence, data = abba_tidy)
+
+summary(reg_model2)
+```
+
+
+The similar relationship can be seen for energy and valence.
+
+
+```{r, fig.alt = "A plot showing the relationship between the valence and loudness"}
+ggplot(abba_tidy, aes(x = valence,
+                      y = loudness)) +
+  geom_point() +
+  labs(x = "Valence", 
+       y = "Loudness",
+       title = "Relationship of Valence and Loudness") +
+   geom_smooth(method = "lm",
+              se = FALSE) +
+  theme_minimal()
+```
+
+```{r}
+cor(abba_tidy$loudness,
+    abba_tidy$valence)
+```
+
+
+There is not clear relationship between valence and loudness as the points are almost a random cloud. 
+
+Therefore, the three variables that are crucial in defining song "happiness" are valence, energy, and danceability. 
+
+
+Let's find the means of these variables for all songs. 
+
+```{r}
+means_abba <- abba_tidy %>% 
+  summarise(mean_valence = mean(valence),
+            mean_energy = mean(energy),
+            mean_danceability = mean(danceability))
+
+knitr::kable(means_abba)
+```
+
+I will divide all songs in two groups "sad" or "happy", taking above-mentioned means as a treshold. The combination of values greater than mean will define "happy" mood in my analysis.
+
+```{r}
+abba_mood <-abba_tidy %>%
+     mutate(mood = if_else(valence > means_abba$mean_valence & energy > means_abba$mean_energy & danceability > means_abba$mean_danceability, "happy", "sad"))
+
+```
+
+
+Now, let's look into the tempo variable.
+
+
+```{r}
+abba_mood2 <- abba_mood %>%
+  group_by(mood) %>%
+  summarise(mean_tempo = mean(tempo))
+
+knitr::kable(abba_mood2)
+```
+
+
+According to the findings of above-mentioned scientists, the tempo of happy songs should equals to, approximately, 137 beats per minute (bpm). However, the mean table shows that it is equal to 128 bpm for happy songs and 122 bmp for sad songs. Since there is not significant difference between means, this could be explained with the upbeat nature of all ABBA songs, even the more lyrical ones. 
+
+
+Therefore, I developed my equation for finding positiveness index, based on only the variables that have a relationship with valence (positiveness measurement):
+
+$$ SpotifyPositiveness Index = \sqrt[3](valence * danceability * energy) $$
+
+
+```{r}
+abba_positive <- abba_mood %>%
+     mutate(positive_index = (valence * danceability * energy)^(1/3))
+```
+
+
+Let's see the list of the most positive songs:
+
+```{r}
+abba_positive2 <- abba_positive %>%
+  arrange(desc(positive_index)) %>%
+  select(track_name, valence, danceability, energy, positive_index, mood) %>%
+   distinct(track_name, .keep_all = TRUE)
+
+knitr::kable(head(abba_positive2, 10))
+```
+
+
+
+```{r, fig.alt = "A boxplot showing the relationship between positiveness index  and loudness mood condition"}
+ggplot(abba_positive, aes(x = mood,
+                                y = positive_index,
+                                fill = mood)) +
+  geom_boxplot() +
+  labs(x = "Mood", 
+       y = "Positiveness Index",
+       title = "Positiveness Index Depending on Mood Condition",
+       fill = "Color") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Dark2")
+
+```
+
+
+Now let's check whether happy songs tend to be more popular than sad. My assumption is that the happy songs tend to be more liked by the listeners. 
+
+Let's go back to my table of the most popular ABBA tracks.
+
+
+```{r}
+abba_combined <- left_join(top_tracks, abba_positive, by = c("name" = "track_name")) %>%
+     distinct(name, .keep_all = TRUE) %>%
+  select(name, popularity, positive_index, mood)
+
+knitr::kable(abba_combined)
+```
+
+
+As it can be seen sad and happy songs are both present in the top-10 most popular ABBA songs.
+However, even for some "sad" songs positiveness index is relatively high such as 0.7209808 or 0.6899587. Therefore, I can conclude that both less and more positive songs tend to be ABBA's hits. However, the happy ones generally prevail.
