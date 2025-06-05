@@ -10,22 +10,22 @@ This project analyzes whether the emotional tone - measured as “positiveness�
 | `abba.html`         | The compiled report |
 | `abba_data.csv`     | Spotify dataset used in the analysis |
 
-## Objective
+## 💡 Objective
 To evaluate whether there is a statistical relationship between how positive a song sounds and how popular it is on Spotify.
 
-## Tools Used
+## 🛠️ Tools Used
 - **R**, with tidyverse (`dplyr`, `ggplot2`)
 - **Linear Regression** (`lm`)
 - **R Markdown** to generate this report
 
-## Key Steps
+## 📝 Key Steps
 - Cleaned and explored the dataset of ABBA’s songs from Spotify
 - Visualized the distribution of positiveness and popularity
 - Ran a linear regression: `Popularity ~ Positiveness`
 - Interpreted model significance and R² value
 - Summarized insights in a reproducible HTML report
 
-## Results
+## 🔍 Results
 While positiveness is *statistically significant*, the model shows a very weak relationship (R² ≈ 0.007), suggesting that positiveness alone does not strongly predict popularity among ABBA's songs.
 
 ## View the Full Report
