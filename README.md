@@ -2,6 +2,14 @@
 
 This project analyzes whether the emotional tone - measured as “positiveness” from Spotify’s audio features — affects the popularity of songs by the legendary band ABBA.
 
+## 📁 Files in This Repo
+
+| File | Description |
+|------|-------------|
+| `abba_analysis.Rmd` | The original R Markdown file used to generate the report |
+| `abba.html`         | The compiled report |
+| `abba_data.csv`     | Spotify dataset used in the analysis |
+
 ## Objective
 To evaluate whether there is a statistical relationship between how positive a song sounds and how popular it is on Spotify.
 
